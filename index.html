@@ -1,0 +1,1784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>TEJAS / TEJUZUMAKI — Mobile-First Systems Architect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --bg: #0a0a0b;
+  --bg-2: #0f0f12;
+  --bg-3: #141418;
+  --sage: #7CFF6B;
+  --sage-dim: #6b8f71;
+  --sage-deep: #2d3a2f;
+  --gold: #c4a054;
+  --gold-dim: #8a7039;
+  --white: #f5f5f0;
+  --white-dim: #888880;
+  --hairline: rgba(124, 255, 107, 0.18);
+  --hairline-dim: rgba(124, 255, 107, 0.08);
+  --grid: rgba(124, 255, 107, 0.04);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+body { cursor: none; min-height: 100vh; }
+
+@media (pointer: coarse) {
+  body { cursor: auto; }
+  .custom-cursor, .cursor-trail { display: none !important; }
+}
+
+::selection { background: var(--sage); color: var(--bg); }
+
+.bg-layer {
+  position: fixed; top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  pointer-events: none;
+}
+.bg-grid { z-index: 1; }
+.bg-particles { z-index: 2; }
+
+.cursor-trail, .custom-cursor {
+  position: fixed; top: 0; left: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+.cursor-trail { width: 100vw; height: 100vh; }
+.custom-cursor {
+  width: 10px; height: 10px;
+  background: var(--sage);
+  mix-blend-mode: difference;
+  z-index: 10000;
+  transition: transform 0.05s linear;
+}
+
+main { position: relative; z-index: 10; }
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+.sans { font-family: 'Space Grotesk', sans-serif; }
+.sage { color: var(--sage); }
+.gold { color: var(--gold); }
+.dim { color: var(--white-dim); }
+
+.clip-notch {
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+}
+
+.clip-notch-lg {
+  clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+}
+
+.clip-tag {
+  clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
+}
+
+.clip-btn {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+.clip-card {
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+}
+
+.status-bar {
+  position: fixed;
+  top: 0; left: 0; width: 100%;
+  z-index: 100;
+  background: rgba(10, 10, 11, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--hairline);
+  padding: 10px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  color: var(--white-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.status-bar .left, .status-bar .right {
+  display: flex; gap: 20px; align-items: center;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  background: var(--sage);
+  margin-right: 8px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  padding: 80px 32px 40px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.hero .corner-mark {
+  position: absolute;
+  top: 80px; right: 32px;
+  font-size: 9px;
+  color: var(--white-dim);
+  text-align: right;
+  line-height: 1.6;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.hero .corner-mark .v { color: var(--sage); }
+
+.hero .boot-log {
+  font-size: 10px;
+  color: var(--sage-dim);
+  margin-bottom: 24px;
+  max-width: 600px;
+  line-height: 1.8;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.hero .boot-log .line { opacity: 0; transition: opacity 0.3s; }
+.hero .boot-log .line.show { opacity: 1; }
+.hero .boot-log .ok { color: var(--sage); }
+.hero .boot-log .warn { color: var(--gold); }
+
+.hero-name-wrap {
+  margin-top: auto;
+  position: relative;
+}
+
+.hero-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: clamp(72px, 19vw, 280px);
+  line-height: 0.85;
+  letter-spacing: -0.045em;
+  color: var(--white);
+  position: relative;
+  min-height: 0.85em;
+}
+
+.hero-name.resolved {
+  text-shadow: 0 0 80px rgba(124, 255, 107, 0.18);
+}
+
+.hero-name .glitch {
+  position: absolute;
+  top: 0; left: 0;
+  color: var(--sage);
+  opacity: 0;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.hero-subname {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 300;
+  font-size: clamp(20px, 4vw, 56px);
+  color: var(--sage);
+  letter-spacing: -0.01em;
+  margin-top: 8px;
+}
+
+.hero-subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(10px, 1.2vw, 13px);
+  color: var(--white-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  margin-top: 28px;
+  border-top: 1px solid var(--hairline);
+  padding-top: 16px;
+  max-width: 900px;
+  line-height: 1.8;
+}
+
+.hero-subtitle .sep { color: var(--sage); margin: 0 6px; }
+
+.hero-meta {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--hairline-dim);
+}
+
+.hero-meta .meta-block {
+  font-size: 9px;
+  color: var(--white-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.hero-meta .meta-block .v {
+  display: block;
+  color: var(--white);
+  font-size: 14px;
+  margin-top: 6px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.hero-meta .meta-block .v.sage { color: var(--sage); }
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 24px; right: 32px;
+  font-size: 9px;
+  color: var(--white-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+.scroll-indicator::after {
+  content: '';
+  display: inline-block;
+  width: 1px; height: 40px;
+  background: linear-gradient(to bottom, var(--sage), transparent);
+  animation: scrollLine 2s infinite;
+}
+
+@keyframes scrollLine {
+  0% { transform: scaleY(0); transform-origin: top; }
+  50% { transform: scaleY(1); transform-origin: top; }
+  51% { transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+/* SECTION HEADER */
+.section-header {
+  padding: 96px 32px 32px;
+  border-top: 1px solid var(--hairline);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 32px;
+  align-items: end;
+}
+
+.section-num {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 300;
+  font-size: clamp(48px, 8vw, 120px);
+  color: var(--sage);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.section-label {
+  font-size: 11px;
+  color: var(--white-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--hairline-dim);
+  margin-bottom: 8px;
+}
+
+.section-label .accent { color: var(--sage); }
+
+/* PROJECT SPREAD */
+.project {
+  padding: 32px 32px 120px;
+  position: relative;
+  border-bottom: 1px solid var(--hairline);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.project.fading {
+  opacity: 0.35;
+  transform: translateX(-28px);
+}
+
+.project-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: end;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--hairline);
+  margin-bottom: 40px;
+}
+
+.project-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--sage);
+  letter-spacing: 0.2em;
+}
+
+.project-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: clamp(36px, 6.5vw, 96px);
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  margin-top: 14px;
+}
+
+.project-title .small {
+  font-size: 0.4em;
+  color: var(--white-dim);
+  font-weight: 300;
+  letter-spacing: 0;
+}
+
+.project-tagline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--white-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-top: 18px;
+  max-width: 500px;
+  line-height: 1.6;
+}
+
+.project-meta {
+  font-size: 10px;
+  color: var(--white-dim);
+  text-align: right;
+}
+
+.project-meta .row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--hairline-dim);
+}
+
+.project-meta .row .k { text-transform: uppercase; letter-spacing: 0.1em; }
+.project-meta .row .v { color: var(--white); font-weight: 500; }
+.project-meta .row .v.live { color: var(--sage); }
+.project-meta .row .v.gold { color: var(--gold); }
+
+.project-body {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: 56px;
+  align-items: start;
+}
+
+.project-editorial {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--white);
+  max-width: 640px;
+}
+
+.project-editorial h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--sage);
+  margin: 36px 0 12px;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.project-editorial h3:first-child { margin-top: 0; }
+
+.project-editorial p {
+  margin-bottom: 16px;
+  color: rgba(245, 245, 240, 0.86);
+}
+
+.project-editorial em {
+  color: var(--white);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.project-editorial .pull {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(20px, 2vw, 26px);
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--white);
+  border-left: 2px solid var(--sage);
+  padding-left: 20px;
+  margin: 36px 0;
+  letter-spacing: -0.012em;
+}
+
+.project-editorial .pull .gold { color: var(--gold); }
+
+.project-editorial code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  background: var(--bg-3);
+  color: var(--sage);
+  padding: 1px 6px;
+  border: 1px solid var(--hairline-dim);
+}
+
+.project-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 80px;
+}
+
+.telemetry {
+  background: var(--bg-2);
+  border: 1px solid var(--hairline);
+  padding: 18px;
+}
+
+.telemetry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.telemetry-header .title {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--white-dim);
+}
+
+.telemetry-header .ts {
+  font-size: 9px;
+  color: var(--sage-dim);
+  letter-spacing: 0.1em;
+}
+
+.telemetry-row {
+  display: grid;
+  grid-template-columns: 1fr auto 80px;
+  align-items: center;
+  font-size: 10px;
+  padding: 7px 0;
+  border-bottom: 1px dashed var(--hairline-dim);
+  gap: 12px;
+}
+
+.telemetry-row:last-child { border-bottom: none; }
+
+.telemetry-row .k { color: var(--white-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+.telemetry-row .v { color: var(--white); font-weight: 500; }
+.telemetry-row .bar {
+  height: 3px;
+  background: var(--bg-3);
+  position: relative;
+  overflow: hidden;
+}
+
+.telemetry-row .bar .fill {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  background: var(--sage);
+  width: 0%;
+  transition: width 1.5s ease-out;
+}
+
+.telemetry-row.warn .bar .fill { background: var(--gold); }
+.telemetry-row.alert .bar .fill { background: #ff5e5e; }
+
+.diagram {
+  background: var(--bg-2);
+  border: 1px solid var(--hairline);
+  padding: 18px;
+  position: relative;
+}
+
+.diagram-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: var(--white-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--hairline-dim);
+}
+
+.diagram-header .hex { color: var(--sage); }
+
+.diagram-body {
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.diagram-body .mermaid {
+  opacity: 0;
+  transition: opacity 0.6s;
+  width: 100%;
+}
+
+.diagram-body .mermaid.rendered { opacity: 1; }
+
+.diagram-body svg { max-width: 100% !important; height: auto !important; }
+
+.project-links {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.tac-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-2);
+  border: 1px solid var(--hairline);
+  padding: 14px 18px;
+  text-decoration: none;
+  color: var(--white);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.tac-btn:hover {
+  background: var(--sage);
+  color: var(--bg);
+  border-color: var(--sage);
+  transform: translateX(4px);
+}
+
+.tac-btn .arrow { font-size: 14px; }
+
+/* MANIFESTO */
+.manifesto-section {
+  padding: 32px 32px 200px;
+  position: relative;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.manifesto-intro {
+  max-width: 720px;
+  margin-bottom: 48px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: rgba(245, 245, 240, 0.7);
+}
+
+.manifesto-intro .lead {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 500;
+  color: var(--white);
+  line-height: 1.25;
+  margin-bottom: 16px;
+  letter-spacing: -0.015em;
+}
+
+.manifesto-intro .lead .gold { color: var(--gold); }
+
+.manifesto-canvas {
+  position: relative;
+  width: 100%;
+  min-height: 720px;
+  background:
+    linear-gradient(to right, var(--hairline-dim) 1px, transparent 1px) 0 0 / 80px 100%,
+    linear-gradient(to bottom, var(--hairline-dim) 1px, transparent 1px) 0 0 / 100% 80px;
+}
+
+.terminal {
+  position: absolute;
+  width: 360px;
+  background: var(--bg-2);
+  border: 1px solid var(--sage);
+  font-family: 'JetBrains Mono', monospace;
+  box-shadow: 0 0 0 1px rgba(124, 255, 107, 0.08), 12px 12px 0 rgba(0,0,0,0.5);
+  touch-action: none;
+  transform-origin: center center;
+  min-width: 260px;
+  min-height: 180px;
+}
+
+.terminal .term-header {
+  background: var(--sage);
+  color: var(--bg);
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.terminal .term-header:active { cursor: grabbing; }
+
+.terminal .term-header .controls {
+  display: flex;
+  gap: 4px;
+}
+
+.terminal .term-header .ctl {
+  width: 9px; height: 9px;
+  background: var(--bg);
+}
+
+.terminal .term-body {
+  padding: 16px;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--white);
+}
+
+.terminal .term-body .term-title {
+  color: var(--sage);
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.terminal .term-body p {
+  color: rgba(245, 245, 240, 0.86);
+  margin-bottom: 8px;
+}
+
+.terminal .term-body .prompt {
+  color: var(--gold);
+  margin-top: 12px;
+  font-size: 11px;
+}
+
+.terminal .term-body .prompt::before {
+  content: "$ ";
+  color: var(--sage);
+}
+
+.terminal .term-resize {
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 14px; height: 14px;
+  background: linear-gradient(135deg, transparent 50%, var(--sage) 50%);
+  cursor: nwse-resize;
+  touch-action: none;
+}
+
+.terminal.t1 { top: 0; left: 0; }
+.terminal.t2 { top: 60px; left: 420px; }
+.terminal.t3 { top: 360px; left: 100px; }
+.terminal.t4 { top: 420px; left: 540px; }
+
+@media (max-width: 1100px) {
+  .terminal { width: 320px; }
+  .terminal.t2 { left: 360px; }
+  .terminal.t4 { left: 460px; }
+}
+
+@media (max-width: 900px) {
+  .terminal {
+    position: relative !important;
+    width: 100% !important;
+    top: auto !important;
+    left: auto !important;
+    margin-bottom: 16px;
+    transform: none !important;
+  }
+  .manifesto-canvas {
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: none;
+  }
+}
+
+/* CONTACT */
+.contact-section {
+  padding: 32px 32px 80px;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.contact-card {
+  background: var(--bg-2);
+  border: 1px solid var(--hairline);
+  padding: 32px;
+  text-decoration: none;
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.3s;
+  position: relative;
+  min-height: 220px;
+  overflow: hidden;
+}
+
+.contact-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 3px;
+  background: var(--sage);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s;
+}
+
+.contact-card:hover::before { transform: scaleX(1); }
+
+.contact-card:hover {
+  background: var(--bg-3);
+  border-color: var(--sage);
+}
+
+.contact-card .label {
+  font-size: 9px;
+  color: var(--white-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.contact-card .name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: clamp(32px, 4vw, 48px);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-top: auto;
+}
+
+.contact-card .handle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--sage);
+}
+
+.contact-card .arrow {
+  position: absolute;
+  bottom: 24px; right: 24px;
+  font-size: 24px;
+  color: var(--sage);
+  transition: transform 0.3s;
+}
+
+.contact-card:hover .arrow { transform: translate(4px, -4px); }
+
+.footer {
+  padding: 32px;
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 9px;
+  color: var(--white-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer .center { color: var(--sage); }
+
+/* Watermark big number */
+.proj-watermark {
+  position: absolute;
+  top: 60px;
+  right: 32px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: clamp(140px, 22vw, 320px);
+  color: rgba(124, 255, 107, 0.03);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+@media (max-width: 768px) {
+  .hero { padding: 70px 16px 32px; }
+  .hero .corner-mark { display: none; }
+  .scroll-indicator { display: none; }
+  .hero-meta { grid-template-columns: 1fr 1fr; }
+  .project { padding: 24px 16px 80px; }
+  .project-head { grid-template-columns: 1fr; }
+  .project-meta { text-align: left; }
+  .project-body { grid-template-columns: 1fr; gap: 32px; }
+  .project-aside { position: relative; top: auto; }
+  .contact-grid { grid-template-columns: 1fr; }
+  .status-bar { padding: 8px 12px; font-size: 8px; }
+  .status-bar .left, .status-bar .right { gap: 10px; }
+  .section-header { padding: 64px 16px 24px; grid-template-columns: 1fr; gap: 16px; }
+  .manifesto-section { padding: 24px 16px 80px; }
+  .contact-section { padding: 24px 16px 40px; }
+  .footer { padding: 24px 16px; }
+  .proj-watermark { display: none; }
+}
+
+.hide-mobile { display: inline; }
+@media (max-width: 768px) { .hide-mobile { display: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<canvas class="bg-layer bg-grid" id="bg-grid"></canvas>
+<canvas class="bg-layer bg-particles" id="bg-particles"></canvas>
+<canvas class="cursor-trail" id="cursor-trail"></canvas>
+<div class="custom-cursor" id="custom-cursor"></div>
+
+<div class="status-bar">
+  <div class="left">
+    <span><span class="status-dot"></span>SYS://TEJUZUMAKI</span>
+    <span class="hide-mobile">UTC <span id="utc-time">--:--:--</span></span>
+    <span class="hide-mobile">LAT 28.61°N</span>
+  </div>
+  <div class="right">
+    <span class="hide-mobile">MONOGRAPH v0.42.1</span>
+    <span>SECTION <span id="cur-section">00</span>/03</span>
+  </div>
+</div>
+
+<main>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="corner-mark">
+    <div>FILE / monograph.tex</div>
+    <div>EDITOR / <span class="v">tejas</span></div>
+    <div>REV / 2024.11</div>
+  </div>
+  
+  <div class="boot-log" id="boot-log"></div>
+  
+  <div class="hero-name-wrap">
+    <div class="hero-name" id="hero-name"></div>
+    <div class="hero-subname">/ TEJUZUMAKI</div>
+  </div>
+  
+  <div class="hero-subtitle">
+    Mobile-First Systems Architect<span class="sep">//</span>Zero-Backend Purist<span class="sep">//</span>AI-Augmented Engineer
+  </div>
+  
+  <div class="hero-meta">
+    <div class="meta-block">Discipline<span class="v">Systems Architecture</span></div>
+    <div class="meta-block">Domain<span class="v">Mobile / P2P / AI</span></div>
+    <div class="meta-block">Doctrine<span class="v">No Backend, No Debt</span></div>
+    <div class="meta-block">Status<span class="v sage">Open for Briefs</span></div>
+  </div>
+  
+  <div class="scroll-indicator">SCROLL</div>
+</section>
+
+<!-- PROJECTS HEADER -->
+<section class="section-header" id="sec-01">
+  <div class="section-num">§ 01</div>
+  <div class="section-label">Flagship Builds <span class="accent">//</span> Four Systems Shipped, Zero Servers Maintained</div>
+</section>
+
+<!-- PROJECT 1: DirectDrop -->
+<section class="project" data-project="01">
+  <div class="proj-watermark">01</div>
+  <div class="project-head">
+    <div>
+      <div class="project-num">PROJECT 01 / 04</div>
+      <div class="project-title">DirectDrop P2P</div>
+      <div class="project-tagline">Kotlin / WebRTC Hybrid Peer-to-Peer Communications</div>
+    </div>
+    <div class="project-meta">
+      <div class="row"><span class="k">Status</span><span class="v live">● LIVE</span></div>
+      <div class="row"><span class="k">Stack</span><span class="v">Kotlin, WebRTC, mDNS</span></div>
+      <div class="row"><span class="k">Backend</span><span class="v">None (TURN fallback)</span></div>
+      <div class="row"><span class="k">Handshake</span><span class="v gold">12ms LAN / 80ms WAN</span></div>
+    </div>
+  </div>
+  
+  <div class="project-body">
+    <div class="project-editorial">
+      <h3>// Architecture Statement</h3>
+      <p>We don't need servers. We need <em>presence</em>. DirectDrop treats the relay as a fallback, not a foundation. Peers discover each other through signed mDNS beacons on the local network, fall back to a STUN-assisted UDP holepunch, and only touch a TURN relay when both NAT types are symmetric — which, statistically, is rare.</p>
+      
+      <div class="pull">The result: a 12ms median handshake on LAN, 80ms over WAN, <span class="gold">zero persistent backend cost</span>.</div>
+      
+      <h3>// Why Hybrid Kotlin / WebRTC</h3>
+      <p>Kotlin handles the signaling state machine natively — coroutine-based, garbage-tolerant, and capable of surviving Android's lifecycle butchery. WebRTC handles the media and data channels. The hybrid split means we don't ship a browser runtime to do browser work, and we don't ask a browser to do native work.</p>
+      
+      <h3>// The Honest Tradeoff</h3>
+      <p>Symmetric NAT environments fail without TURN. We accept this. Engineering honesty: we'd rather fail visibly than pretend to be "serverless" while quietly renting a $400/mo relay cluster. The TURN relay is a 60-line <code>coturn</code> config, not a managed service.</p>
+    </div>
+    
+    <div class="project-aside">
+      <div class="telemetry clip-notch">
+        <div class="telemetry-header"><span class="title">Live Telemetry</span><span class="ts">T+00:00</span></div>
+        <div class="telemetry-row"><span class="k">P2P Success</span><span class="v">94.2%</span><div class="bar"><div class="fill" data-w="94"></div></div></div>
+        <div class="telemetry-row"><span class="k">TURN Fallback</span><span class="v">5.8%</span><div class="bar"><div class="fill" data-w="6"></div></div></div>
+        <div class="telemetry-row warn"><span class="k">Handshake ms</span><span class="v">12 / 80</span><div class="bar"><div class="fill" data-w="22"></div></div></div>
+        <div class="telemetry-row"><span class="k">Backend Cost</span><span class="v">$0.00/mo</span><div class="bar"><div class="fill" data-w="0"></div></div></div>
+        <div class="telemetry-row"><span class="k">Data Sovereignty</span><span class="v">100% Local</span><div class="bar"><div class="fill" data-w="100"></div></div></div>
+      </div>
+      
+      <div class="diagram clip-notch">
+        <div class="diagram-header"><span>ARCH // directdrop.flow</span><span class="hex">0x01</span></div>
+        <div class="diagram-body">
+          <div class="mermaid" data-mermaid="1">
+flowchart LR
+  A[Peer A Kotlin] -->|mDNS Beacon| B((Local Network))
+  B -->|SDP Offer| C[Peer B Kotlin]
+  C -->|STUN Discover| D{NAT Type}
+  D -->|Cone| E[UDP Holepunch Direct]
+  D -->|Symmetric| F[TURN Relay Fallback]
+  E --> G[DataChannel 12ms RTT]
+  F --> G
+  style A fill:#7CFF6B,color:#0a0a0b,stroke:none
+  style C fill:#7CFF6B,color:#0a0a0b,stroke:none
+  style E fill:#6b8f71,color:#fff,stroke:none
+  style F fill:#c4a054,color:#0a0a0b,stroke:none
+  style G fill:#141418,color:#fff,stroke:#7CFF6B
+          </div>
+        </div>
+      </div>
+      
+      <div class="project-links">
+        <a href="https://github.com/TejUzumaki" target="_blank" rel="noopener" class="tac-btn clip-btn"><span>Live</span><span class="arrow">↗</span></a>
+        <a href="https://github.com/TejUzumaki" target="_blank" rel="noopener" class="tac-btn clip-btn"><span>Source</span><span class="arrow">↗</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECT 2: Brainrot -->
+<section class="project" data-project="02">
+  <div class="proj-watermark">02</div>
+  <div class="project-head">
+    <div>
+      <div class="project-num">PROJECT 02 / 04</div>
+      <div class="project-title">Brainrot Adventure</div>
+      <div class="project-tagline">Mobile Open-World FPS — Procedural ECS World</div>
+    </div>
+    <div class="project-meta">
+      <div class="row"><span class="k">Status</span><span class="v">SOURCE OPEN</span></div>
+      <div class="row"><span class="k">Engine</span><span class="v">Custom ECS / OpenGL ES</span></div>
+      <div class="row"><span class="k">Frame Budget</span><span class="v gold">16ms</span></div>
+      <div class="row"><span class="k">Entity Cap</span><span class="v">2,400 Active</span></div>
+    </div>
+  </div>
+  
+  <div class="project-body">
+    <div class="project-editorial">
+      <h3>// Design Brief</h3>
+      <p>An open-world FPS on mobile is fundamentally a problem of budget. You have 16 milliseconds per frame, a thermal envelope that closes after 12 minutes of sustained load, and 4GB of RAM shared with the OS. Brainrot Adventure treats these constraints as <em>the design</em> — not as the obstacle.</p>
+      
+      <div class="pull">The world is generated <span class="gold">procedurally via deterministic noise</span>, so storage is constant. The ECS batches render calls by material hash, dropping GPU draw count from 1,800 to 240 per frame.</div>
+      
+      <h3>// The Game Loop</h3>
+      <p>The loop runs fixed-tick at 60Hz with a decoupled renderer at refresh rate. Entity updates parallelize across worker threads via a lock-free ring buffer; the main thread only orchestrates. Combat is hitbox-precise, not bbox-precise — because bbox combat on mobile feels like a spreadsheet.</p>
+      
+      <h3>// What It Doesn't Have</h3>
+      <p>No microtransactions. No live-service backend. No accounts. The world is yours, offline, forever. The save file is a 4KB protobuf. If the player closes the app and reopens it in 2031, the world will still be there.</p>
+    </div>
+    
+    <div class="project-aside">
+      <div class="telemetry clip-notch">
+        <div class="telemetry-header"><span class="title">Runtime Telemetry</span><span class="ts">T+06:42</span></div>
+        <div class="telemetry-row"><span class="k">Frame Time</span><span class="v">14.2ms</span><div class="bar"><div class="fill" data-w="88"></div></div></div>
+        <div class="telemetry-row"><span class="k">Draw Calls</span><span class="v">240</span><div class="bar"><div class="fill" data-w="13"></div></div></div>
+        <div class="telemetry-row warn"><span class="k">Thermal</span><span class="v">42°C</span><div class="bar"><div class="fill" data-w="58"></div></div></div>
+        <div class="telemetry-row"><span class="k">ECS Entities</span><span class="v">2,180</span><div class="bar"><div class="fill" data-w="90"></div></div></div>
+        <div class="telemetry-row"><span class="k">Save Size</span><span class="v">3.8KB</span><div class="bar"><div class="fill" data-w="2"></div></div></div>
+      </div>
+      
+      <div class="diagram clip-notch">
+        <div class="diagram-header"><span>ARCH // brainrot.loop</span><span class="hex">0x02</span></div>
+        <div class="diagram-body">
+          <div class="mermaid" data-mermaid="2">
+flowchart TB
+  A[Fixed Tick 60Hz] --> B[Lock-Free Ring Buffer]
+  B --> C[Worker Thread Pool]
+  C --> D[ECS System Batch]
+  D --> E[Spatial Hash Index]
+  E --> F[Render Queue]
+  F --> G[Material Sort]
+  G --> H[OpenGL ES Draw]
+  H --> I[Display 120Hz]
+  A --> J[Physics Subsystem]
+  J --> E
+  style A fill:#7CFF6B,color:#0a0a0b,stroke:none
+  style H fill:#c4a054,color:#0a0a0b,stroke:none
+  style I fill:#141418,color:#fff,stroke:#7CFF6B
+          </div>
+        </div>
+      </div>
+      
+      <div class="project-links">
+        <a href="https://github.com/TejUzumaki" target="_blank" rel="noopener" class="tac-btn clip-btn"><span>Source</span><span class="arrow">↗</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECT 3: Digital Reset -->
+<section class="project" data-project="03">
+  <div class="proj-watermark">03</div>
+  <div class="project-head">
+    <div>
+      <div class="project-num">PROJECT 03 / 04</div>
+      <div class="project-title">Digital Reset</div>
+      <div class="project-tagline">Anti-Dopamine Behavior Modification PWA</div>
+    </div>
+    <div class="project-meta">
+      <div class="row"><span class="k">Status</span><span class="v">SOURCE OPEN</span></div>
+      <div class="row"><span class="k">Platform</span><span class="v">PWA / Service Worker</span></div>
+      <div class="row"><span class="k">Backend</span><span class="v">None (IndexedDB)</span></div>
+      <div class="row"><span class="k">Intervention</span><span class="v gold">800ms Median</span></div>
+    </div>
+  </div>
+  
+  <div class="project-body">
+    <div class="project-editorial">
+      <h3>// Thesis</h3>
+      <p>Willpower is a deprecated API. The dopamine economy has reverse-engineered human attention into a slot machine, and "discipline" cannot defeat a billion-dollar optimization pipeline. Digital Reset does not ask the user to resist — it inserts friction at the moment of compulsive action, just enough to make the loop visible.</p>
+      
+      <div class="pull">The user reaches for Instagram. The PWA intercepts the intent. An <span class="gold">800ms delay</span>. A prompt: <em>"What are you avoiding?"</em> The loop is broken — not by force, but by visibility.</div>
+      
+      <h3>// How It Works</h3>
+      <p>Installed as a PWA, Digital Reset registers itself as the default handler for high-friction URL patterns. When a registered domain is requested, the service worker returns a local intervention page instead — recording the trigger, surfacing the user's stated intent, and offering either a 5-minute delay or a hard cancel. The user opts in to every intervention.</p>
+      
+      <h3>// Data Privacy</h3>
+      <p>Zero telemetry. Zero accounts. All trigger logs, streak counts, and reflection notes live in IndexedDB, on-device. The data never leaves the phone because the data <em>cannot</em> leave the phone — there is no upload path. The user is the only audience for their own behavior.</p>
+    </div>
+    
+    <div class="project-aside">
+      <div class="telemetry clip-notch">
+        <div class="telemetry-header"><span class="title">Behavioral Metrics</span><span class="ts">LOCAL ONLY</span></div>
+        <div class="telemetry-row"><span class="k">Interventions</span><span class="v">3.2/day</span><div class="bar"><div class="fill" data-w="40"></div></div></div>
+        <div class="telemetry-row"><span class="k">Cancel Rate</span><span class="v">68%</span><div class="bar"><div class="fill" data-w="68"></div></div></div>
+        <div class="telemetry-row warn"><span class="k">Median Delay</span><span class="v">800ms</span><div class="bar"><div class="fill" data-w="30"></div></div></div>
+        <div class="telemetry-row"><span class="k">Data Sent</span><span class="v">0 bytes</span><div class="bar"><div class="fill" data-w="0"></div></div></div>
+        <div class="telemetry-row"><span class="k">Streak Median</span><span class="v">11 days</span><div class="bar"><div class="fill" data-w="55"></div></div></div>
+      </div>
+      
+      <div class="diagram clip-notch">
+        <div class="diagram-header"><span>ARCH // digitalreset.flow</span><span class="hex">0x03</span></div>
+        <div class="diagram-body">
+          <div class="mermaid" data-mermaid="3">
+flowchart LR
+  A[Compulsive Trigger] --> B[Service Worker Intercept]
+  B --> C{Pattern Match}
+  C -->|No| D[Pass Through]
+  C -->|Yes| E[800ms Delay]
+  E --> F[Intervention Page]
+  F --> G{User Choice}
+  G -->|Cancel| H[Streak Plus One]
+  G -->|Delay 5m| I[Queue and Remind]
+  G -->|Proceed| J[Allow Once]
+  H --> K[IndexedDB Log]
+  style A fill:#c4a054,color:#0a0a0b,stroke:none
+  style B fill:#7CFF6B,color:#0a0a0b,stroke:none
+  style H fill:#7CFF6B,color:#0a0a0b,stroke:none
+  style K fill:#141418,color:#fff,stroke:#7CFF6B
+          </div>
+        </div>
+      </div>
+      
+      <div class="project-links">
+        <a href="https://github.com/TejUzumaki" target="_blank" rel="noopener" class="tac-btn clip-btn"><span>Source</span><span class="arrow">↗</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECT 4: MERAKAN -->
+<section class="project" data-project="04">
+  <div class="proj-watermark">04</div>
+  <div class="project-head">
+    <div>
+      <div class="project-num">PROJECT 04 / 04</div>
+      <div class="project-title">मेरा管 <span class="small">/ MERAKAN</span></div>
+      <div class="project-tagline">Serverless P2P Video Streaming via WebRTC Gossip</div>
+    </div>
+    <div class="project-meta">
+      <div class="row"><span class="k">Status</span><span class="v">SOURCE OPEN</span></div>
+      <div class="row"><span class="k">Protocol</span><span class="v">WebRTC Gossip Mesh</span></div>
+      <div class="row"><span class="k">Max Viewers</span><span class="v">~80 / Stream</span></div>
+      <div class="row"><span class="k">Central Server</span><span class="v gold">None</span></div>
+    </div>
+  </div>
+  
+  <div class="project-body">
+    <div class="project-editorial">
+      <h3>// Premise</h3>
+      <p>Twitch is a CDN pretending to be a community. MERAKAN (मेरा管 — "my pipe" / "my management") rejects the premise. A streamer should be able to broadcast from a phone, to a hundred phones, with no ingest server, no transcoding farm, no AWS bill. The mesh <em>is</em> the infrastructure.</p>
+      
+      <div class="pull">Each viewer becomes a relay. The 3rd viewer receives chunks from the streamer and re-broadcasts to viewers 4 and 5. The streamer's uplink stays constant; <span class="gold">total network capacity scales with audience size</span>.</div>
+      
+      <h3>// Gossip Topology</h3>
+      <p>The mesh uses a structured gossip protocol — each peer maintains N active outbound connections and accepts M inbound. Chunk propagation follows a swarming pattern similar to BitTorrent's piece selection, with rarest-first prioritization. Playback is delayed by a 2-second buffer to allow mesh saturation before consumption.</p>
+      
+      <h3>// Failure Modes</h3>
+      <p>If a relay peer disconnects, downstream peers re-attach within 400ms via a backup peer list maintained by the gossip layer. The stream degrades — it does not die. The network topology self-heals because every peer knows three alternative parents.</p>
+    </div>
+    
+    <div class="project-aside">
+      <div class="telemetry clip-notch">
+        <div class="telemetry-header"><span class="title">Mesh Telemetry</span><span class="ts">STREAMING</span></div>
+        <div class="telemetry-row"><span class="k">Active Peers</span><span class="v">47</span><div class="bar"><div class="fill" data-w="58"></div></div></div>
+        <div class="telemetry-row"><span class="k">Mesh Depth</span><span class="v">4 hops</span><div class="bar"><div class="fill" data-w="40"></div></div></div>
+        <div class="telemetry-row warn"><span class="k">Recovery</span><span class="v">380ms</span><div class="bar"><div class="fill" data-w="15"></div></div></div>
+        <div class="telemetry-row"><span class="k">Uplink</span><span class="v">2.1 Mbps</span><div class="bar"><div class="fill" data-w="21"></div></div></div>
+        <div class="telemetry-row"><span class="k">Server Cost</span><span class="v">$0.00</span><div class="bar"><div class="fill" data-w="0"></div></div></div>
+      </div>
+      
+      <div class="diagram clip-notch">
+        <div class="diagram-header"><span>ARCH // merakan.mesh</span><span class="hex">0x04</span></div>
+        <div class="diagram-body">
+          <div class="mermaid" data-mermaid="4">
+flowchart TD
+  S((Streamer)) --> P1[Peer 1]
+  S --> P2[Peer 2]
+  S --> P3[Peer 3]
+  P1 --> P4[Peer 4]
+  P1 --> P5[Peer 5]
+  P2 --> P6[Peer 6]
+  P2 --> P7[Peer 7]
+  P3 --> P8[Peer 8]
+  P3 --> P9[Peer 9]
+  P4 --> P10[Peer 10]
+  P5 --> P11[Peer 11]
+  P6 --> P12[Peer 12]
+  style S fill:#7CFF6B,color:#0a0a0b,stroke:none
+  style P1 fill:#6b8f71,color:#fff,stroke:none
+  style P2 fill:#6b8f71,color:#fff,stroke:none
+  style P3 fill:#6b8f71,color:#fff,stroke:none
+  style P4 fill:#c4a054,color:#0a0a0b,stroke:none
+  style P5 fill:#c4a054,color:#0a0a0b,stroke:none
+  style P6 fill:#c4a054,color:#0a0a0b,stroke:none
+          </div>
+        </div>
+      </div>
+      
+      <div class="project-links">
+        <a href="https://github.com/TejUzumaki" target="_blank" rel="noopener" class="tac-btn clip-btn"><span>Source</span><span class="arrow">↗</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MANIFESTO HEADER -->
+<section class="section-header" id="sec-02">
+  <div class="section-num">§ 02</div>
+  <div class="section-label">Engineering Manifesto <span class="accent">//</span> Four Operating Doctrines, Drag to Rearrange</div>
+</section>
+
+<!-- MANIFESTO -->
+<section class="manifesto-section">
+  <div class="manifesto-intro">
+    <div class="lead">These are not preferences. <span class="gold">They are constraints</span> I refuse to ship without.</div>
+    <p>Each window below is a draggable, resizable artifact. Treat them like terminal sessions — move them, scale them, read them in any order. The doctrines do not compete; they compose. On touch devices, pinch to zoom.</p>
+  </div>
+  
+  <div class="manifesto-canvas" id="manifesto-canvas">
+    <div class="terminal t1" data-id="1">
+      <div class="term-header"><span>◉ anti-asset.md</span><div class="controls"><span class="ctl"></span><span class="ctl"></span><span class="ctl"></span></div></div>
+      <div class="term-body">
+        <div class="term-title">// Anti-Asset Engineering</div>
+        <p>Don't build things that need to be maintained. Don't accumulate infrastructure. Ship the smallest possible artifact that holds its shape under load.</p>
+        <p>If a service exists, it must justify its memory, its CPU, and the 3am phone call it will eventually cause.</p>
+        <div class="prompt">cat /doctrine/anti-asset --verify</div>
+      </div>
+      <div class="term-resize"></div>
+    </div>
+    
+    <div class="terminal t2" data-id="2">
+      <div class="term-header"><span>◉ context_window.md</span><div class="controls"><span class="ctl"></span><span class="ctl"></span><span class="ctl"></span></div></div>
+      <div class="term-body">
+        <div class="term-title">// Context-Window Hacking</div>
+        <p>Treat every prompt, every input, every keystroke as a constrained channel. Compress intent into structure.</p>
+        <p>The LLM is a co-processor, not a chat partner. Learn to speak in tokens, not sentences. Output is currency; spend it on signal.</p>
+        <div class="prompt">tokens --budget 4096 --density max</div>
+      </div>
+      <div class="term-resize"></div>
+    </div>
+    
+    <div class="terminal t3" data-id="3">
+      <div class="term-header"><span>◉ friction.md</span><div class="controls"><span class="ctl"></span><span class="ctl"></span><span class="ctl"></span></div></div>
+      <div class="term-body">
+        <div class="term-title">// Friction Choreography</div>
+        <p>Friction is not the enemy. Default friction is.</p>
+        <p>Choreographed friction — the kind that slows the user before a destructive action, the kind that makes a "share" button cost one extra tap — is design. Choreograph it deliberately, never accidentally.</p>
+        <div class="prompt">grep -r "default_friction" ./ux</div>
+      </div>
+      <div class="term-resize"></div>
+    </div>
+    
+    <div class="terminal t4" data-id="4">
+      <div class="term-header"><span>◉ no_fake_data.md</span><div class="controls"><span class="ctl"></span><span class="ctl"></span><span class="ctl"></span></div></div>
+      <div class="term-body">
+        <div class="term-title">// No Fake Data Policy</div>
+        <p>Mock data is technical debt with a smile. If you don't have the data, you don't have the feature.</p>
+        <p>Build the data path first. Then the feature is real, not a screenshot. The repo is not a portfolio piece — it is a witness statement.</p>
+        <div class="prompt">rm -rf /mocks && git commit -m "no fake data"</div>
+      </div>
+      <div class="term-resize"></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT HEADER -->
+<section class="section-header" id="sec-03">
+  <div class="section-num">§ 03</div>
+  <div class="section-label">System Access <span class="accent">//</span> Open Channels for Collaboration</div>
+</section>
+
+<section class="contact-section">
+  <div class="contact-grid">
+    <a href="https://github.com/TejUzumaki" target="_blank" rel="noopener" class="contact-card clip-card">
+      <div class="label">Primary Code Repository</div>
+      <div class="name">GitHub</div>
+      <div class="handle">@TejUzumaki</div>
+      <div class="arrow">↗</div>
+    </a>
+    <a href="https://vercel.com/TejUzumaki" target="_blank" rel="noopener" class="contact-card clip-card">
+      <div class="label">Edge Deployments</div>
+      <div class="name">Vercel</div>
+      <div class="handle">@TejUzumaki</div>
+      <div class="arrow">↗</div>
+    </a>
+  </div>
+</section>
+
+<footer class="footer">
+  <span>© 2024 TEJAS / TEJUZUMAKI</span>
+  <span class="center">HAND-CODED // ZERO FRAMEWORK // ZERO BACKEND</span>
+  <span>END OF MONOGRAPH ◼</span>
+</footer>
+
+</main>
+
+<script>
+const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+const isMobile = window.innerWidth < 900;
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ============ MERMAID ============
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'dark',
+  themeVariables: {
+    darkMode: true,
+    background: '#0f0f12',
+    primaryColor: '#1a1a1f',
+    primaryTextColor: '#f5f5f0',
+    primaryBorderColor: '#7CFF6B',
+    lineColor: '#6b8f71',
+    secondaryColor: '#141418',
+    tertiaryColor: '#0a0a0b',
+    fontSize: '11px',
+    fontFamily: 'JetBrains Mono, monospace'
+  },
+  flowchart: { curve: 'basis', htmlLabels: true, padding: 12 }
+});
+
+// ============ BOOT LOG ============
+const bootLines = [
+  { t: '00:00:00.001', msg: 'INIT portfolio.boot', type: 'ok' },
+  { t: '00:00:00.120', msg: 'mount /dev/tejas → /', type: 'ok' },
+  { t: '00:00:00.340', msg: 'load doctrine "zero-backend"', type: 'ok' },
+  { t: '00:00:00.580', msg: 'load doctrine "no-fake-data"', type: 'ok' },
+  { t: '00:00:00.810', msg: 'render hero kinetic typography', type: 'ok' },
+  { t: '00:00:01.040', msg: 'TURN relay required for symmetric NAT', type: 'warn' },
+  { t: '00:00:01.220', msg: 'load mermaid v10 diagrams', type: 'ok' },
+  { t: '00:00:01.430', msg: 'SYSTEM ONLINE — welcome, operator', type: 'ok' }
+];
+
+const bootLogEl = document.getElementById('boot-log');
+bootLines.forEach((line, i) => {
+  const div = document.createElement('div');
+  div.className = 'line';
+  const mark = line.type === 'ok' ? '✓' : '⚠';
+  div.innerHTML = `<span class="${line.type}">[${line.t}]</span> ${mark} ${line.msg}`;
+  bootLogEl.appendChild(div);
+  setTimeout(() => div.classList.add('show'), 300 + i * 200);
+});
+
+// ============ HERO SCRAMBLE ============
+const heroNameEl = document.getElementById('hero-name');
+const targetName = 'TEJAS';
+const scrambleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*<>?/+=';
+let scrambleProgress = 0;
+
+function renderScramble() {
+  let out = '';
+  for (let i = 0; i < targetName.length; i++) {
+    if (i < scrambleProgress) {
+      out += targetName[i];
+    } else {
+      out += scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+    }
+  }
+  heroNameEl.textContent = out;
+}
+
+const scrambleTimer = setInterval(() => {
+  renderScramble();
+  scrambleProgress += 0.4;
+  if (scrambleProgress >= targetName.length) {
+    clearInterval(scrambleTimer);
+    heroNameEl.textContent = targetName;
+    heroNameEl.classList.add('resolved');
+  }
+}, 80);
+
+// ============ UTC TIME ============
+function updateUtc() {
+  const now = new Date();
+  const t = now.toISOString().split('T')[1].substring(0, 8);
+  const el = document.getElementById('utc-time');
+  if (el) el.textContent = t;
+}
+setInterval(updateUtc, 1000);
+updateUtc();
+
+// ============ CURSOR TRAIL ============
+const trailCanvas = document.getElementById('cursor-trail');
+const trailCtx = trailCanvas.getContext('2d');
+const cursorEl = document.getElementById('custom-cursor');
+
+function sizeTrail() {
+  trailCanvas.width = window.innerWidth;
+  trailCanvas.height = window.innerHeight;
+}
+sizeTrail();
+window.addEventListener('resize', sizeTrail);
+
+const packets = [];
+let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+
+if (!isTouch) {
+  window.addEventListener('mousemove', e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    cursorEl.style.transform = `translate(${e.clientX - 5}px, ${e.clientY - 5}px)`;
+    if (Math.random() < 0.6) {
+      packets.push({
+        x: e.clientX + (Math.random() - 0.5) * 6,
+        y: e.clientY + (Math.random() - 0.5) * 6,
+        life: 1,
+        size: 1.5 + Math.random() * 2.5,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3
+      });
+    }
+  });
+  
+  function animateTrail() {
+    trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+    for (let i = packets.length - 1; i >= 0; i--) {
+      const p = packets[i];
+      p.life -= 0.035;
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.life <= 0) {
+        packets.splice(i, 1);
+        continue;
+      }
+      const alpha = p.life * 0.7;
+      trailCtx.fillStyle = `rgba(124, 255, 107, ${alpha})`;
+      trailCtx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+    }
+    requestAnimationFrame(animateTrail);
+  }
+  animateTrail();
+}
+
+// ============ BG GRID ============
+const gridCanvas = document.getElementById('bg-grid');
+const gridCtx = gridCanvas.getContext('2d');
+const particleCanvas = document.getElementById('bg-particles');
+const particleCtx = particleCanvas.getContext('2d');
+
+function sizeBg() {
+  [gridCanvas, particleCanvas].forEach(c => {
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
+  });
+}
+sizeBg();
+window.addEventListener('resize', sizeBg);
+
+let scrollY = window.scrollY;
+let scrollVel = 0;
+let targetVel = 0;
+
+window.addEventListener('scroll', () => {
+  const dy = window.scrollY - scrollY;
+  targetVel = dy;
+  scrollY = window.scrollY;
+}, { passive: true });
+
+const gridSize = 64;
+let gridPoints = [];
+
+function initGrid() {
+  gridPoints = [];
+  const cols = Math.ceil(window.innerWidth / gridSize) + 1;
+  const rows = Math.ceil(window.innerHeight / gridSize) + 1;
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      gridPoints.push({
+        x: x * gridSize,
+        y: y * gridSize,
+        ox: x * gridSize,
+        oy: y * gridSize,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+  }
+}
+initGrid();
+window.addEventListener('resize', initGrid);
+
+let time = 0;
+
+function animateGrid() {
+  if (reduceMotion) return;
+  time += 0.01;
+  scrollVel += (targetVel - scrollVel) * 0.1;
+  targetVel *= 0.92;
+  
+  gridCtx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
+  
+  gridPoints.forEach(p => {
+    const wave = Math.sin(time + p.phase) * 1.5;
+    const velOffset = scrollVel * 0.04;
+    p.x = p.ox + wave + velOffset * (p.ox / window.innerWidth - 0.5);
+    p.y = p.oy + wave * 0.5;
+  });
+  
+  // Dots
+  gridPoints.forEach(p => {
+    const dist = Math.hypot(p.x - mouseX, p.y - mouseY);
+    const proximity = Math.max(0, 1 - dist / 220);
+    const intensity = 0.06 + proximity * 0.35 + Math.abs(scrollVel) * 0.004;
+    gridCtx.fillStyle = `rgba(124, 255, 107, ${Math.min(intensity, 0.7)})`;
+    const s = 1 + proximity * 1.5;
+    gridCtx.fillRect(p.x - s/2, p.y - s/2, s, s);
+  });
+  
+  // Cursor connections
+  if (!isTouch) {
+    gridPoints.forEach(p => {
+      const dist = Math.hypot(p.x - mouseX, p.y - mouseY);
+      if (dist < 140) {
+        const alpha = (1 - dist / 140) * 0.15;
+        gridCtx.strokeStyle = `rgba(124, 255, 107, ${alpha})`;
+        gridCtx.lineWidth = 0.5;
+        gridCtx.beginPath();
+        gridCtx.moveTo(p.x, p.y);
+        gridCtx.lineTo(mouseX, mouseY);
+        gridCtx.stroke();
+      }
+    });
+  }
+  
+  requestAnimationFrame(animateGrid);
+}
+if (!reduceMotion) animateGrid();
+
+// ============ PARTICLES ============
+let particles = [];
+function initParticles() {
+  particles = [];
+  const count = isMobile ? 18 : 45;
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25,
+      size: 1 + Math.random() * 2,
+      life: Math.random()
+    });
+  }
+}
+initParticles();
+window.addEventListener('resize', initParticles);
+
+function animateParticles() {
+  if (reduceMotion) return;
+  particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+  
+  particles.forEach(p => {
+    p.x += p.vx + scrollVel * 0.002;
+    p.y += p.vy;
+    
+    if (p.x < 0) p.x = window.innerWidth;
+    if (p.x > window.innerWidth) p.x = 0;
+    if (p.y < 0) p.y = window.innerHeight;
+    if (p.y > window.innerHeight) p.y = 0;
+    
+    const alpha = 0.12 + Math.abs(scrollVel) * 0.008;
+    particleCtx.fillStyle = `rgba(196, 160, 84, ${Math.min(alpha, 0.5)})`;
+    particleCtx.fillRect(p.x, p.y, p.size, p.size);
+  });
+  
+  requestAnimationFrame(animateParticles);
+}
+if (!reduceMotion) animateParticles();
+
+// ============ PROJECT CROSS-FADE ============
+const projects = document.querySelectorAll('.project');
+const projectObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    const rect = entry.boundingClientRect;
+    const vh = window.innerHeight;
+    // If scrolled significantly past, fade
+    if (rect.bottom < vh * 0.2) {
+      entry.target.classList.add('fading');
+    } else {
+      entry.target.classList.remove('fading');
+    }
+  });
+}, {
+  threshold: [0, 0.1, 0.3, 0.5, 0.7, 1],
+  rootMargin: '0px 0px 0px 0px'
+});
+
+projects.forEach(p => projectObserver.observe(p));
+
+// ============ MERMAID ON SCROLL ============
+const mermaidBlocks = document.querySelectorAll('[data-mermaid]');
+const rendered = new Set();
+
+const mObserver = new IntersectionObserver(async (entries) => {
+  for (const entry of entries) {
+    if (entry.isIntersecting && !rendered.has(entry.target)) {
+      rendered.add(entry.target);
+      const code = entry.target.textContent.trim();
+      const id = 'mmd_' + entry.target.dataset.mermaid + '_' + Date.now();
+      try {
+        const { svg } = await mermaid.render(id, code);
+        entry.target.innerHTML = svg;
+        entry.target.classList.add('rendered');
+        
+        const svgEl = entry.target.querySelector('svg');
+        if (svgEl) {
+          svgEl.style.maxWidth = '100%';
+          svgEl.style.height = 'auto';
+          const els = svgEl.querySelectorAll('path, line, polygon, rect, circle, .edgePath, .node, .label, .edgeLabel, .cluster');
+          els.forEach((el, i) => {
+            el.style.opacity = '0';
+            el.style.transition = 'opacity 0.35s ease';
+            setTimeout(() => { el.style.opacity = '1'; }, 80 + i * 35);
+          });
+        }
+      } catch (e) {
+        console.warn('Mermaid render failed:', e);
+        entry.target.classList.add('rendered');
+      }
+    }
+  }
+}, { threshold: 0.25 });
+
+mermaidBlocks.forEach(b => mObserver.observe(b));
+
+// ============ TELEMETRY BARS ============
+const tObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const fills = entry.target.querySelectorAll('.bar .fill');
+      fills.forEach((f, i) => {
+        const w = f.dataset.w;
+        setTimeout(() => { f.style.width = w + '%'; }, 150 + i * 80);
+      });
+      tObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.3 });
+
+document.querySelectorAll('.telemetry').forEach(t => tObserver.observe(t));
+
+// ============ SECTION INDICATOR ============
+const sectionEls = document.querySelectorAll('.section-header');
+const sObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id.replace('sec-', '');
+      const el = document.getElementById('cur-section');
+      if (el) el.textContent = id;
+    }
+  });
+}, { threshold: 0.5 });
+sectionEls.forEach(s => sObserver.observe(s));
+
+// ============ DRAGGABLE TERMINALS ============
+const terminals = document.querySelectorAll('.terminal');
+let topZ = 100;
+
+terminals.forEach(term => {
+  let isDragging = false;
+  let startX, startY, initialLeft, initialTop;
+  const header = term.querySelector('.term-header');
+  
+  function startDrag(e) {
+    if (isMobile) return;
+    if (e.target.classList.contains('ctl')) return;
+    isDragging = true;
+    term.style.zIndex = ++topZ;
+    const point = e.touches ? e.touches[0] : e;
+    startX = point.clientX;
+    startY = point.clientY;
+    const rect = term.getBoundingClientRect();
+    const parentRect = term.parentElement.getBoundingClientRect();
+    initialLeft = rect.left - parentRect.left;
+    initialTop = rect.top - parentRect.top;
+    term.style.left = initialLeft + 'px';
+    term.style.top = initialTop + 'px';
+    term.style.right = 'auto';
+    term.style.bottom = 'auto';
+    e.preventDefault();
+  }
+  
+  function moveDrag(e) {
+    if (!isDragging) return;
+    const point = e.touches ? e.touches[0] : e;
+    const dx = point.clientX - startX;
+    const dy = point.clientY - startY;
+    term.style.left = (initialLeft + dx) + 'px';
+    term.style.top = (initialTop + dy) + 'px';
+    e.preventDefault();
+  }
+  
+  function endDrag() { isDragging = false; }
+  
+  header.addEventListener('mousedown', startDrag);
+  document.addEventListener('mousemove', moveDrag);
+  document.addEventListener('mouseup', endDrag);
+  
+  // Resize handle
+  const resize = term.querySelector('.term-resize');
+  let isResizing = false;
+  let startW, startH, startRX, startRY;
+  
+  function startResize(e) {
+    isResizing = true;
+    const point = e.touches ? e.touches[0] : e;
+    startRX = point.clientX;
+    startRY = point.clientY;
+    startW = term.offsetWidth;
+    startH = term.offsetHeight;
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  
+  function moveResize(e) {
+    if (!isResizing) return;
+    const point = e.touches ? e.touches[0] : e;
+    const dw = point.clientX - startRX;
+    const dh = point.clientY - startRY;
+    term.style.width = Math.max(260, startW + dw) + 'px';
+    term.style.height = Math.max(180, startH + dh) + 'px';
+    e.preventDefault();
+  }
+  
+  function endResize() { isResizing = false; }
+  
+  resize.addEventListener('mousedown', startResize);
+  document.addEventListener('mousemove', moveResize);
+  document.addEventListener('mouseup', endResize);
+});
+
+// ============ PINCH ZOOM (TOUCH) ============
+if (isTouch) {
+  terminals.forEach(term => {
+    let initialDist = 0;
+    let initialScale = 1;
+    let currentScale = 1;
+    
+    term.addEventListener('touchstart', e => {
+      if (e.touches.length === 2) {
+        initialDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        initialScale = currentScale;
+        term.style.zIndex = ++topZ;
+      }
+    }, { passive: true });
+    
+    term.addEventListener('touchmove', e => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const newDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const scale = initialScale * (newDist / Math.max(initialDist, 1));
+        currentScale = Math.max(0.6, Math.min(2.2, scale));
+        term.style.transform = `scale(${currentScale})`;
+      }
+    }, { passive: false });
+  });
+}
+
+// ============ TAP TO FRONT ============
+terminals.forEach(term => {
+  term.addEventListener('click', e => {
+    term.style.zIndex = ++topZ;
+  });
+});
+
+</script>
+</body>
+</html>
